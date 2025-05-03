@@ -142,43 +142,47 @@ port = int(os.environ.get("PORT", 8000))  # デフォルト8000、Render上で�
 #     return {"results": results}
 
 # @app.post("/predict") をログ付きに変更
+
+import logging
+
+# ログ設定
+logging.basicConfig(level=logging.INFO)
+
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
-    print("📥 ファイル受信:", file.filename)
-
+    logging.info("✅ /predict にリクエストを受信")
+    
     if not file.filename.lower().endswith((".png", ".jpg", ".jpeg")):
-        print("❌ 拡張子エラー")
+        logging.error("❌ 対応していないファイル形式")
         raise HTTPException(status_code=400, detail="画像ファイル（png/jpg/jpeg）をアップロードしてください。")
-
+    
     try:
         contents = await file.read()
-        print("✅ ファイル読み込み成功")
-
         image = Image.open(io.BytesIO(contents)).convert("RGB")
-        print("🖼️ PIL 画像変換成功")
+        logging.info("✅ 画像を読み込みました")
+    except Exception as e:
+        logging.error(f"❌ 画像読み込み失敗: {e}")
+        raise HTTPException(status_code=400, detail="画像の読み込みに失敗しました。")
 
+    try:
         img_tensor = transform(image).unsqueeze(0)
-        print("🔁 前処理（Tensor変換）成功")
+        logging.info(f"✅ 画像をテンソルに変換しました。形状: {img_tensor.shape}")
+    except Exception as e:
+        logging.error(f"❌ transform失敗: {e}")
+        raise HTTPException(status_code=500, detail="画像の変換に失敗しました。")
 
+    try:
         with torch.no_grad():
             outputs = model(img_tensor)
-            print("📊 モデル推論成功")
-
             probabilities = torch.nn.functional.softmax(outputs[0], dim=0)
-            print("📈 softmax 計算成功")
-
             top3_probs, top3_indices = torch.topk(probabilities, 3)
-            print("🏅 top3 抽出成功")
-
             results = [
                 {"name": class_names[idx], "probability": float(prob)}
                 for idx, prob in zip(top3_indices, top3_probs)
             ]
-            print("✅ 結果作成成功:", results)
-
-        return {"results": results}
-
+        logging.info(f"✅ 推論成功: {results}")
     except Exception as e:
-        print("❌ 予測処理で例外:", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        logging.error(f"❌ 推論失敗: {e}")
+        raise HTTPException(status_code=500, detail="推論処理に失敗しました。")
 
+    return {"results": results}
