@@ -55,16 +55,31 @@ if uploaded_file is not None:
     st.image(image, caption="アップロードされた画像", use_container_width=True)
 
     with st.spinner("🌺 画像を分類中..."):
+        
         try:
+            st.write("✅ APIへリクエストを送信中")  # ログ確認用
             response = requests.post(
-                "https://hana10.onrender.com/predict",  # ← ご自身のFastAPIサーバーURL
+                "https://hana10.onrender.com/predict",
                 files={"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)},
-                timeout=30  # タイムアウト長めに
-            )
+                timeout=30
+             )
             response.raise_for_status()
+            st.write("✅ 応答を受信しました")  # ログ確認用
         except requests.exceptions.RequestException as e:
-            st.error(f"❌ 予測APIに接続できませんでした。\n{e}")
+            st.error(f"❌ 予測APIに接続できませんでした。")
+            st.error(str(e))  # ← 詳細なエラー内容を表示
             st.stop()
+
+        # try:
+        #     response = requests.post(
+        #         "https://hana10.onrender.com/predict",  # ← ご自身のFastAPIサーバーURL
+        #         files={"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)},
+        #         timeout=30  # タイムアウト長めに
+        #     )
+        #     response.raise_for_status()
+        # except requests.exceptions.RequestException as e:
+        #     st.error(f"❌ 予測APIに接続できませんでした。\n{e}")
+        #     st.stop()
 
     if response.status_code == 200:
         results = response.json()["results"]
