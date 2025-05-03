@@ -58,7 +58,7 @@ if uploaded_file is not None:
         try:
             response = requests.post(
                 "https://hana10.onrender.com/predict",  # ← ご自身のFastAPIサーバーURL
-                files={"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)}
+                files={"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)},
                 timeout=30  # タイムアウト長めに
             )
             response.raise_for_status()
