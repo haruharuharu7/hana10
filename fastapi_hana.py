@@ -54,7 +54,7 @@ async def index():
         <div class="box">
             <h1>🌿 植物名の予測サイト 🌿</h1>
             <p>植物画像をアップロードしてください</p>
-            <p><a href="http://localhost:8501/" target="_blank">📄 植物の名前は？</a></p>
+            <p><a href="https://hana10-harunatsuakifuyu.streamlit.app/" target="_blank">📄 植物の名前は？</a></p>
         </div>
     </body>
     </html>
