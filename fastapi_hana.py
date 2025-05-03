@@ -110,14 +110,8 @@ transform = transforms.Compose([
 ])
 
 # # ===== 予測エンドポイント（PORT 環境変数） =====
-# import os
-
-# port = int(os.environ.get("PORT", 8000))  # デフォルト8000、Render上ではPORTが与えられる
-
-# if __name__ == "__main__":
-#     import uvicorn
-#     uvicorn.run("fastapi_hana:app", host="0.0.0.0", port=port)
-
+import os
+port = int(os.environ.get("PORT", 8000))  # デフォルト8000、Render上ではPORTが与えられる
 
 # ===== 予測エンドポイント（推論用エンドポイント） =====
 @app.post("/predict")
