@@ -114,29 +114,71 @@ import os
 port = int(os.environ.get("PORT", 8000))  # デフォルト8000、Render上ではPORTが与えられる
 
 # ===== 予測エンドポイント（推論用エンドポイント） =====
+# @app.post("/predict")
+# async def predict(file: UploadFile = File(...)):
+#     if not file.filename.lower().endswith((".png", ".jpg", ".jpeg")):  #str 型以外で使ってる場合に出ることがあります。
+#         raise HTTPException(status_code=400, detail="画像ファイル（png/jpg/jpeg）をアップロードしてください。")
+    
+#     contents = await file.read()
+#     try:
+#         image = Image.open(io.BytesIO(contents)).convert("RGB")
+#     except Exception:
+#         raise HTTPException(status_code=400, detail="画像の読み込みに失敗しました。")
+    
+#     img_tensor = transform(image).unsqueeze(0)   # (1, 3, 224, 224)
+#         # transform(image) の戻り値が Tensor じゃない場合に .unsqueeze(0) で失敗します。
+#         # PIL → Tensor 変換が transform で失敗している場合、ファイルの中身が画像じゃない可能性もあります。
+#         # ただし、コード上は .unsqueeze(0) の使い方に問題はありません。
+
+#     with torch.no_grad():
+#         outputs = model(img_tensor)
+#         probabilities = torch.nn.functional.softmax(outputs[0], dim=0)
+    
+#     top3_probs, top3_indices = torch.topk(probabilities, 3)
+#     results = [
+#         {"name": class_names[idx], "probability": float(prob)} # {"name": クラス名, "probability": 確率} 
+#         for idx, prob in zip(top3_indices, top3_probs)
+#     ]
+#     return {"results": results}
+
+# @app.post("/predict") をログ付きに変更
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
-    if not file.filename.lower().endswith((".png", ".jpg", ".jpeg")):  #str 型以外で使ってる場合に出ることがあります。
-        raise HTTPException(status_code=400, detail="画像ファイル（png/jpg/jpeg）をアップロードしてください。")
-    
-    contents = await file.read()
-    try:
-        image = Image.open(io.BytesIO(contents)).convert("RGB")
-    except Exception:
-        raise HTTPException(status_code=400, detail="画像の読み込みに失敗しました。")
-    
-    img_tensor = transform(image).unsqueeze(0)   # (1, 3, 224, 224)
-        # transform(image) の戻り値が Tensor じゃない場合に .unsqueeze(0) で失敗します。
-        # PIL → Tensor 変換が transform で失敗している場合、ファイルの中身が画像じゃない可能性もあります。
-        # ただし、コード上は .unsqueeze(0) の使い方に問題はありません。
+    print("📥 ファイル受信:", file.filename)
 
-    with torch.no_grad():
-        outputs = model(img_tensor)
-        probabilities = torch.nn.functional.softmax(outputs[0], dim=0)
-    
-    top3_probs, top3_indices = torch.topk(probabilities, 3)
-    results = [
-        {"name": class_names[idx], "probability": float(prob)} # {"name": クラス名, "probability": 確率} 
-        for idx, prob in zip(top3_indices, top3_probs)
-    ]
-    return {"results": results}
+    if not file.filename.lower().endswith((".png", ".jpg", ".jpeg")):
+        print("❌ 拡張子エラー")
+        raise HTTPException(status_code=400, detail="画像ファイル（png/jpg/jpeg）をアップロードしてください。")
+
+    try:
+        contents = await file.read()
+        print("✅ ファイル読み込み成功")
+
+        image = Image.open(io.BytesIO(contents)).convert("RGB")
+        print("🖼️ PIL 画像変換成功")
+
+        img_tensor = transform(image).unsqueeze(0)
+        print("🔁 前処理（Tensor変換）成功")
+
+        with torch.no_grad():
+            outputs = model(img_tensor)
+            print("📊 モデル推論成功")
+
+            probabilities = torch.nn.functional.softmax(outputs[0], dim=0)
+            print("📈 softmax 計算成功")
+
+            top3_probs, top3_indices = torch.topk(probabilities, 3)
+            print("🏅 top3 抽出成功")
+
+            results = [
+                {"name": class_names[idx], "probability": float(prob)}
+                for idx, prob in zip(top3_indices, top3_probs)
+            ]
+            print("✅ 結果作成成功:", results)
+
+        return {"results": results}
+
+    except Exception as e:
+        print("❌ 予測処理で例外:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
