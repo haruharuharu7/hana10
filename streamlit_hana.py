@@ -57,7 +57,7 @@ if uploaded_file is not None:
     with st.spinner("🌺 画像を分類中..."):
         try:
             response = requests.post(
-                "http://localhost:8000/predict",  # ← ご自身のFastAPIサーバーURL
+                "https://hana10.onrender.com/predict",  # ← ご自身のFastAPIサーバーURL
                 files={"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)}
             )
             response.raise_for_status()
