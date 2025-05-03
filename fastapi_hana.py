@@ -113,6 +113,10 @@ transform = transforms.Compose([
 import os
 port = int(os.environ.get("PORT", 8000))  # デフォルト8000、Render上ではPORTが与えられる
 
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=port)
+    
 # ===== 予測エンドポイント（推論用エンドポイント） =====
 # @app.post("/predict")
 # async def predict(file: UploadFile = File(...)):
