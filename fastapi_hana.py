@@ -9,6 +9,12 @@ import pandas as pd
 
 app = FastAPI()
 
+# Render の Health Check    /health エンドポイントを作成する
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
+
 # # ===== トップページのメッセージ =====
 from fastapi.responses import HTMLResponse
 
