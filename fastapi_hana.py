@@ -6,9 +6,18 @@ from torchvision import transforms
 from PIL import Image
 import io
 import pandas as pd
+import os
+import uvicorn
+
 
 app = FastAPI()
 
+
+# ===== Render起動：  ポート番号を取得して起動する方法=====
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("fastapi_hana:app", host="0.0.0.0", port=port)
+    
 # Render の Health Check    /health エンドポイントを作成する
 @app.get("/health")
 def health_check():
@@ -66,7 +75,6 @@ async def index():
     </html>
     """
     return html_content
-
 
 
 # ===== CORSを許可（Streamlitとの通信のため）=====
