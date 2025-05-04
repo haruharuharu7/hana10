@@ -16,7 +16,7 @@ app = FastAPI()
 # ===== Render起動：  ポート番号を取得して起動する方法=====
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("fastapi_hana:app", host="0.0.0.0", port=port)
+    uvicorn.run("fastapi_hana:app", host="0.0.0.0", port=10000)
     
 # Render の Health Check    /health エンドポイントを作成する
 @app.get("/health")
